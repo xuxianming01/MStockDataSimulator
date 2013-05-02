@@ -1,0 +1,190 @@
+<html>
+<head>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="jquery.js"></script>
+    <script>
+        $(function(){
+            var iosocket = io.connect();
+            var stockList={};
+            var stockListOld={};
+            var stockListNum={};
+            var sindex=1;
+ 
+            iosocket.on('connect', function () {
+                //$('#incomingChatMessages').append($('<li>Connected</li>'));
+                $('#serverConnected').text("Server Connected");
+                
+ 
+                iosocket.on('message', function(message) {
+                    //$('#incomingChatMessages').append($('<li></li>').text(message));
+                    var obj=jQuery.parseJSON(message);
+                    var tindex;
+                    if(stockList[obj.symbol])
+                    {
+                    	tindex=stockListNum[obj.symbol];
+                    }
+                    else
+                    {
+                    	stockList[obj.symbol]=obj;
+                    	stockListNum[obj.symbol]=sindex++;
+                    	tindex=stockListNum[obj.symbol];
+                    }	
+                    
+                    storeData(tindex,obj,stockListOld);
+                    //row1.innerHTML="<td>"+tindex+"</td>"
+                    //row1.innerHTML+="<td>"+obj.symbol+"</td><td>"+obj.name+"</td>";
+                    //row1.innerHTML+="<td>"+obj.lastClosePrice+"</td><td>"+obj.open+"</td><td>"+obj.high+"</td><td>"+obj.low+"</td><td>"+obj.latest+"</td>";
+                    //row1.innerHTML+="<td>"+obj.tradenumber+"</td><td>"+obj.totalvolume+"</td><td>"+obj.totalvalue+"</td>";
+                    //row1.innerHTML+="<td>"+obj.bidPricesVolumes[0].price+"</td><td>"+obj.bidPricesVolumes[0].volume+"</td>";
+                    //row1.innerHTML+="<td>"+obj.askPricesVolumes[0].price+"</td><td>"+obj.askPricesVolumes[0].volume+"</td>";
+                    //$('#incomingChatMessages').append($('<li></li>').text(obj.symbol));
+                });
+                iosocket.on('disconnect', function() {
+                    //$('#incomingChatMessages').append('<li>Disconnected</li>');
+                    $('#serverConnected').text("Server Disconnected");
+                    
+                });
+            });
+ 
+            $('#outgoingChatMessage').keypress(function(event) {
+                if(event.which == 13) {
+                    event.preventDefault();
+                    iosocket.send($('#outgoingChatMessage').val());
+                    $('#incomingChatMessages').append($('<li></li>').text($('#outgoingChatMessage').val()));
+                    $('#outgoingChatMessage').val('');
+                }
+            });
+        });
+        function storeData(num,obj,stockListOld)
+        {
+        	var  r= document.getElementById('row'+num); 
+        	var objOld=stockListOld[obj.symbol];  	 	
+        	r.innerHTML="<td>"+num+"</td>"
+          r.innerHTML+="<td>"+obj.symbol+"</td><td>"+obj.name+"</td>";
+          r.innerHTML+="<td>"+obj.lastClosePrice+"</td><td>"+obj.open+"</td>";
+          if(objOld)
+          {
+          	r.innerHTML+="<td style='color:"+checkColor(objOld.high,obj.high)+"'>"+obj.high+"</td>";
+          	r.innerHTML+="<td style='color:"+checkColor(objOld.low,obj.low)+"'>"+obj.low+"</td>";
+          	r.innerHTML+="<td style='color:"+checkColor(objOld.latest,obj.latest)+"'>"+obj.latest+"</td>";
+          }
+          else
+          {
+          	r.innerHTML+="<td>"+obj.high+"</td>";
+          	r.innerHTML+="<td>"+obj.low+"</td>";
+          	r.innerHTML+="<td>"+obj.latest+"</td>";
+          }	
+          r.innerHTML+="<td>"+obj.tradenumber+"</td><td>"+obj.totalvolume+"</td><td>"+obj.totalvalue+"</td>";
+          if(obj.bidPricesVolumes.length>0)
+          {
+          	r.innerHTML+="<td>"+obj.bidPricesVolumes[0].price+"</td>";
+            r.innerHTML+="<td>"+obj.bidPricesVolumes[0].volume+"</td>";
+          }
+          else
+          {
+          	r.innerHTML+="<td>-</td>";
+            r.innerHTML+="<td>-</td>";
+          }
+          if(obj.askPricesVolumes.length>0)
+          {
+          	r.innerHTML+="<td>"+obj.askPricesVolumes[0].price+"</td>";
+            r.innerHTML+="<td>"+obj.askPricesVolumes[0].volume+"</td>";
+          }
+          else
+          {
+          	r.innerHTML+="<td>-</td>";
+            r.innerHTML+="<td>-</td>";
+          }
+          
+          stockListOld[obj.symbol]=obj;
+        }
+        function checkColor(oldV,newV)
+        {
+        	var cv=oldV-newV;
+        	var result="black";
+        	if(cv>0)
+        	{
+        		result="red";
+        	}
+        	else if(cv<0)
+        	{
+        		result="#32CD32";
+          }	
+          return result;
+        }
+    </script>
+    <title>许仙明的股票行情展示</title> 
+    <link rel='stylesheet' href='/stylesheets/bootstrap.css' /> 
+    <style type="text/css"> 
+      body { 
+        padding-top: 60px; 
+        padding-bottom: 40px; 
+      } 
+    </style> 
+    <link href="/stylesheets/bootstrap-responsive.css" rel="stylesheet">
+</head>
+<body>
+	<div class="navbar navbar-fixed-top"> 
+      <div class="navbar-inner"> 
+        <div class="container"> 
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"> 
+            <span class="icon-bar"></span> 
+            <span class="icon-bar"></span> 
+            <span class="icon-bar"></span> 
+          </a> 
+          <div class="nav-collapse"> 
+            <ul class="nav"> 
+              <li class="active">许仙明的股票行情展示</li></br>
+              服务器连接状态：<ul id="serverConnected"></ul>
+            </br>
+               <li class="active">股票行情</li></br>
+               对于最高、最低、最新三个价格：</br>
+               <li class="active"><font color="red">红色字体表示相比上一次行情数据，该价格涨</font></li>
+               <li class="active"><font color="#32CD32">绿色字体表示相比上一次行情数据，该价格跌</font></li>
+              <table border="1" align="left">
+              <tr bgcolor="#F5F5F5">
+              	<td>序号</td>
+              	<td>代码</td>
+              	<td>名称</td>
+              	<td>昨日收盘价</td>
+              	<td>开盘价</td>
+              	<td>最高</td>
+              	<td>最低</td>
+              	<td>最新</td>
+              	<td>成交笔数</td>
+              	<td>成交数量</td>
+              	<td>成交金额</td>
+              	<td>买一价</td>
+              	<td>卖一价</td>
+              	<td>买一数量</td>
+              	<td>卖一数量</td>
+              </tr>
+              <tr id="row1">
+              </tr>
+              <tr id="row2"  bgcolor="#E6E6FA">
+              </tr>
+              <tr id="row3">
+              </tr>
+              <tr id="row4"  bgcolor="#E6E6FA">
+              </tr>
+              <tr id="row5">
+              </tr>
+            </table>
+              
+              
+            </ul> 
+          </div> 
+        </div> 
+      </div> 
+    </div> 
+	<div id="container" class="container"  style="clear:both;"> 
+		  </br>
+      <ul id="incomingChatMessages"></ul>
+      <hr /> 
+      <footer> 
+        <p><a href="http://www.gf.com.cn/" target="_blank">广发证劵</a> 2013</p> 
+      </footer> 
+  </div> 
+</body>
+</html>

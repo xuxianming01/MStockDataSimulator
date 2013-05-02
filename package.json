@@ -1,0 +1,13 @@
+{
+  "name": "StockDataSimulator",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "thrift": "0.7.0",
+    "express": "3.2.1",
+    "socket.io": "0.9.14"
+  }
+}
