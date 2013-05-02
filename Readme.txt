@@ -30,6 +30,9 @@
       
    由于本人在股票行情模拟生成器中，简化了部分股票交易规则；
    请务必在使用该模拟器前，阅读“股票生成器说明.bmp”；
+   
+   MarketDataSimulator.jar通过thrift机制向node.js传送数据，使用端口为 9799；
+   因此请确保该端口可以使用；
 
 4）股票行情web展示
    进入StockDataSimulator目录后，运行 npm install
