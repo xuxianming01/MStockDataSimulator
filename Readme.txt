@@ -39,6 +39,7 @@
 
 4）股票行情web展示
    进入StockDataSimulator目录后，运行 npm install
+   运行npm install命令目的是要安装相关的第三方模块，程序中用到的模块包括：socket.io，thrift；
    运行 node app.js
    在chrome浏览器中打开 http://localhost:8080/
    （注意前端仅测试过chrome，不保证其他浏览器可以正确运行）
